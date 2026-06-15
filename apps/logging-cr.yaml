@@ -1,0 +1,26 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: logging
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: http://linux03.local:3000/admin/jif-lab-platform.git
+    targetRevision: main
+    path: manifests/logging
+    directory:
+      recurse: false           # flat dir: es / kibana / exporter / servicemonitor
+  destination:
+    server: https://kubernetes.default.svc
+    # ECK CRs carry their own namespace; confirm it matches your cluster before apply.
+    namespace: logging
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=false
+
