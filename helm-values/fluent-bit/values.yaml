@@ -1,0 +1,73 @@
+kind: DaemonSet
+
+image:
+  repository: cr.fluentbit.io/fluent/fluent-bit
+  tag: "5.0.7"        # pin explicitly; check your current one first
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    memory: 128Mi
+
+tolerations:
+- key: node-role.kubernetes.io/control-plane
+  operator: Exists
+  effect: NoSchedule
+
+# inject elastic password as env var, referenced in [OUTPUT]
+env:
+- name: ES_PASSWORD
+  valueFrom:
+    secretKeyRef:
+      name: lab-es-es-elastic-user
+      key: elastic
+
+# mount ES CA from the ECK-generated secret
+extraVolumes:
+- name: es-ca
+  secret:
+    secretName: lab-es-es-http-certs-public
+extraVolumeMounts:
+- name: es-ca
+  mountPath: /fluent-bit/tls
+  readOnly: true
+
+config:
+  inputs: |
+    [INPUT]
+        Name tail
+        Path /var/log/containers/*.log
+        multiline.parser cri
+        Tag kube.*
+        Mem_Buf_Limit 5MB
+        Skip_Long_Lines On
+
+  filters: |
+    [FILTER]
+        Name kubernetes
+        Match kube.*
+        Merge_Log On
+        Merge_Log_Key app
+        Keep_Log Off
+        K8S-Logging.Parser On
+        K8S-Logging.Exclude On
+
+  outputs: |
+    [OUTPUT]
+        Name es
+        Match kube.*
+        Host lab-es-es-http.logging.svc.cluster.local
+        Port 9200
+        HTTP_User elastic
+        HTTP_Passwd ${ES_PASSWORD}
+        TLS On
+        TLS.Verify On
+        TLS.CA_File /fluent-bit/tls/ca.crt
+        Suppress_Type_Name On
+        Logstash_Format On
+        Logstash_Prefix fluentbit
+        Replace_Dots On
+        Retry_Limit 5
+        Trace_Error On

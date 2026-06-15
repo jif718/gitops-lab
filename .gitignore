@@ -1,0 +1,13 @@
+# historical helm values backups (git is the version history)
+*.yaml.2026*
+*.yaml.bak
+
+# private keys / certs / kubeconfig (use Sealed Secrets or SOPS instead)
+*.key
+*.pem
+kubeconfig
+*.kubeconfig
+
+# editor / OS noise
+.DS_Store
+*.swp

@@ -1,0 +1,9 @@
+# values.yaml — minimal, match your existing setup
+global:
+  domain: argocd.local        # you expose argocd.local via NGF HTTPS
+
+configs:
+  params:
+    server.insecure: true      # TLS terminated at NGF gateway, not at argocd-server
+
+# pin nothing else for now; migrate first, tune later

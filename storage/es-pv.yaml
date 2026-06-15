@@ -1,0 +1,21 @@
+# es-pv.yaml
+# Local PV physically bound to linux02's disk; nodeAffinity forces pods here
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: elasticsearch-data-pv
+spec:
+  capacity:
+    storage: 10Gi
+  accessModes: [ReadWriteOnce]
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: manual
+  local:
+    path: /data/elasticsearch
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: node-role.kubernetes.io/logging   # match the label, not hostname
+          operator: In
+          values: ["true"]

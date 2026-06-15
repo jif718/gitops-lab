@@ -1,0 +1,24 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: jenkins-restore
+  namespace: jenkins
+spec:
+  restartPolicy: Never
+  nodeSelector:
+    jenkins: controller
+  tolerations:
+    - key: "node-role.kubernetes.io/control-plane"
+      operator: "Exists"
+      effect: "NoSchedule"
+  containers:
+    - name: restore
+      image: alpine
+      command: ["sh", "-c", "sleep 36000"]
+      volumeMounts:
+        - name: jenkins-home
+          mountPath: /data
+  volumes:
+    - name: jenkins-home
+      persistentVolumeClaim:
+        claimName: jenkins

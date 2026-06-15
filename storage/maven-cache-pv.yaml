@@ -1,0 +1,25 @@
+# maven-cache-pv.yaml
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: jenkins-maven-cache-pv
+spec:
+  capacity:
+    storage: 4Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: manual
+  hostPath:
+    path: /data/jenkins-maven-cache
+  claimRef:                          # ← 新增，强制绑定到指定 PVC
+    namespace: jenkins
+    name: jenkins-maven-cache-pvc
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: kubernetes.io/hostname
+              operator: In
+              values:
+                - linux01.local

@@ -1,0 +1,78 @@
+prometheus:
+  prometheusSpec:
+    nodeSelector:
+      kubernetes.io/hostname: linux01.local
+    tolerations:
+      - key: node-role.kubernetes.io/control-plane
+        operator: Exists
+        effect: NoSchedule
+    retention: 15d
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: manual
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: 8Gi
+
+grafana:
+  enabled: true
+  adminPassword: admin123
+
+  persistence:
+    enabled: true
+    type: pvc
+    storageClassName: manual
+    accessModes:
+      - ReadWriteOnce
+    size: 2Gi
+  
+  nodeSelector:
+    kubernetes.io/hostname: linux01.local
+
+  tolerations:
+    - key: "node-role.kubernetes.io/control-plane"
+      operator: "Exists"
+      effect: "NoSchedule"
+
+kube-state-metrics:
+  prometheus:
+    monitor:
+      relabelings:
+        - targetLabel: cluster
+          replacement: home
+
+prometheus-node-exporter:
+  prometheus:
+    monitor:
+      relabelings:
+        - targetLabel: cluster
+          replacement: home
+
+kubelet:
+  serviceMonitor:
+    relabelings:
+      - action: replace
+        sourceLabels:
+          - __metrics_path__
+        targetLabel: metrics_path
+      - targetLabel: cluster
+        replacement: home
+
+    cAdvisorRelabelings:
+      - action: replace
+        sourceLabels:
+          - __metrics_path__
+        targetLabel: metrics_path
+      - targetLabel: cluster
+        replacement: home
+
+    probesRelabelings:
+      - action: replace
+        sourceLabels:
+          - __metrics_path__
+        targetLabel: metrics_path
+      - targetLabel: cluster
+        replacement: home
