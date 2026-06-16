@@ -21,10 +21,10 @@ spec:
   destination:
     server: https://kubernetes.default.svc
     namespace: elastic-system
-  # syncPolicy:                      # 先注释, diff 干净后恢复
-  #   automated:
-  #     prune: true
-  #     selfHeal: true
-  #   syncOptions:
-  #     - CreateNamespace=false
-  #     - ServerSideApply=true
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=false
+      - ServerSideApply=true
