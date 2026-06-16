@@ -20,10 +20,10 @@ spec:
   destination:
     server: https://kubernetes.default.svc
     namespace: metallb-system
-  # syncPolicy:                      # 临时注释, 验证 diff 后恢复
-  #   automated:
-  #     prune: true
-  #     selfHeal: true
-  #   syncOptions:
-  #     - CreateNamespace=false
-  #     - ServerSideApply=true
+  syncPolicy:                      # 临时注释, 验证 diff 后恢复
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=false
+      - ServerSideApply=true
