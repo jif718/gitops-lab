@@ -1,0 +1,30 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: eck-operator
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  sources:
+    - repoURL: https://helm.elastic.co
+      chart: eck-operator
+      targetRevision: "3.4.0"
+      helm:
+        releaseName: elastic-operator
+        valueFiles:
+          - $values/helm-values/eck-operator/values.yaml
+    - repoURL: http://linux03.local:3000/admin/jif-lab-platform.git
+      targetRevision: main
+      ref: values
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: elastic-system
+  # syncPolicy:                      # 先注释, diff 干净后恢复
+  #   automated:
+  #     prune: true
+  #     selfHeal: true
+  #   syncOptions:
+  #     - CreateNamespace=false
+  #     - ServerSideApply=true
