@@ -18,4 +18,4 @@ spec:
             - key: kubernetes.io/hostname
               operator: In
               values:
-                - linux01.local   # pinned to linux01, same as jenkins/prometheus
+                - linux02.local
