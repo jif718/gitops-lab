@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: redis
-          image: redis:8.6.4   # official image
+          image: redis:8.8.0-alpine   # official image
           command: ["redis-server", "/etc/redis/redis.conf"]
           ports:
             - containerPort: 6379
