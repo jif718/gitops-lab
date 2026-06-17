@@ -15,7 +15,18 @@ spec:
       containers:
         - name: redis
           image: redis:8.8.0-alpine   # official image
-          command: ["redis-server", "/etc/redis/redis.conf"]
+          # inject password from secret as env var
+          env:
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: redis-auth
+                  key: password
+          # pass password via CLI arg (overrides config file), expanded by shell
+          command:
+            - sh
+            - -c
+            - exec redis-server /etc/redis/redis.conf --requirepass "$REDIS_PASSWORD"
           ports:
             - containerPort: 6379
           resources:

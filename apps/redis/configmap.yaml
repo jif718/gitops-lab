@@ -5,7 +5,6 @@ metadata:
   namespace: redis
 data:
   redis.conf: |
-    requirepass petclinic123
     appendonly yes
     maxmemory 100mb
     maxmemory-policy allkeys-lru
