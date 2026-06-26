@@ -18,3 +18,9 @@ spec:
     server: https://kubernetes.default.svc
     namespace: istio-system
   # syncPolicy intentionally omitted for now — create disabled, verify first
+  ignoreDifferences:
+    - group: admissionregistration.k8s.io
+      kind: ValidatingWebhookConfiguration
+      name: istiod-default-validator
+      jqPathExpressions:
+        - '.webhooks[].failurePolicy'
