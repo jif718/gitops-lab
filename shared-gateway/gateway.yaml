@@ -1,0 +1,15 @@
+apiVersion: networking.istio.io/v1
+kind: Gateway
+metadata:
+  name: shared-gateway
+  namespace: istio-ingress
+spec:
+  selector:
+    istio: ingressgateway     # must match ingress gateway pod label
+  servers:
+    - port:
+        number: 80
+        name: http
+        protocol: HTTP
+      hosts:
+        - "*.local"

@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: shared-gateway
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"     # after ingress gateway pods exist
+spec:
+  project: default
+  source:
+    repoURL: http://linux03.local:3000/admin/jif-lab-platform.git
+    targetRevision: main
+    path: shared-gateway
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: istio-ingress
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
