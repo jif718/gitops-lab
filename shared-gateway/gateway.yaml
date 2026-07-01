@@ -13,3 +13,12 @@ spec:
         protocol: HTTP
       hosts:
         - "*.local"
+    - port:                        # new: HTTPS 443
+        number: 443
+        name: https
+        protocol: HTTPS
+      tls:
+        mode: SIMPLE               # TLS terminate at gateway
+        credentialName: local-tls  # secret must be in istio-ingress ns (copied in step 1)
+      hosts:
+        - "*.local"
