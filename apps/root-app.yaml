@@ -16,3 +16,11 @@ spec:
     server: https://kubernetes.default.svc
     namespace: argocd
   # syncPolicy intentionally omitted: adoption pattern, diff first
+  syncPolicy:
+    automated:
+      prune: false     # deleting an apps/*.yaml must never auto-delete the Application
+      selfHeal: true
+  syncPolicy:
+    automated:
+      prune: false     # deleting an apps/*.yaml must never auto-delete the Application
+      selfHeal: true
