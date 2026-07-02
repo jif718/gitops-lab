@@ -7,7 +7,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://linux03.local:3000/jif/jif-lab-platform.git  # match your existing apps/*.yaml
+    repoURL: https://linux03.local:3000/admin/jif-lab-platform.git  # match your existing apps/*.yaml
     targetRevision: main
     path: storage
   destination:
