@@ -11,6 +11,9 @@ spec:
   storageClassName: manual
   hostPath:
     path: /data/jenkins-home
+  claimRef:
+    namespace: jenkins
+    name: jenkins
   nodeAffinity:
     required:
       nodeSelectorTerms:
