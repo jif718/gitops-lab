@@ -21,3 +21,9 @@ spec:
         - /spec/claimRef/resourceVersion
   # syncPolicy intentionally omitted: verify `argocd app diff` shows
   # tracking annotations only, then add the block below
+  syncPolicy:
+    automated:
+      prune: false      # pruning a bound PV releases the volume - never enable
+      selfHeal: false   # PV spec is near-immutable; selfHeal only adds noise
+    syncOptions:
+      - ApplyOutOfSyncOnly=true
