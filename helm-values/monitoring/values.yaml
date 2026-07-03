@@ -42,7 +42,7 @@ kube-state-metrics:
     monitor:
       relabelings:
         - action: replace
-        - targetLabel: cluster
+          targetLabel: cluster
           replacement: home
 
 prometheus-node-exporter:
@@ -50,7 +50,7 @@ prometheus-node-exporter:
     monitor:
       relabelings:
         - action: replace
-        - targetLabel: cluster
+          targetLabel: cluster
           replacement: home
 
 kubelet:
@@ -61,7 +61,7 @@ kubelet:
           - __metrics_path__
         targetLabel: metrics_path
       - action: replace
-      - targetLabel: cluster
+        targetLabel: cluster
         replacement: home
 
     cAdvisorRelabelings:
@@ -70,7 +70,7 @@ kubelet:
           - __metrics_path__
         targetLabel: metrics_path
       - action: replace
-      - targetLabel: cluster
+        targetLabel: cluster
         replacement: home
 
     probesRelabelings:
@@ -79,5 +79,5 @@ kubelet:
           - __metrics_path__
         targetLabel: metrics_path
       - action: replace
-      - targetLabel: cluster
+        targetLabel: cluster
         replacement: home
