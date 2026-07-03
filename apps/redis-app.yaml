@@ -8,7 +8,7 @@ spec:
   source:
     repoURL: http://linux03.local:3000/admin/jif-lab-platform.git   # your Gitea repo
     targetRevision: HEAD
-    path: apps/redis        # directory mode: apply all YAML in this dir
+    path: manifests/redis        # directory mode: apply all YAML in this dir
   destination:
     server: https://kubernetes.default.svc
     namespace: redis
