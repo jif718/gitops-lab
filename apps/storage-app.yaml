@@ -9,7 +9,7 @@ spec:
   source:
     repoURL: http://linux03.local:3000/admin/jif-lab-platform.git  # match your existing apps/*.yaml
     targetRevision: main
-    path: storage
+    path: manifests/storage
   destination:
     server: https://kubernetes.default.svc
   ignoreDifferences:
