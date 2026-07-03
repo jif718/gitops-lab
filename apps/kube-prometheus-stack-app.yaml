@@ -28,3 +28,6 @@ spec:
       kind: ValidatingWebhookConfiguration
       jqPathExpressions: ['.webhooks[]?.clientConfig.caBundle']
   # syncPolicy omitted: adoption, diff first
+  syncPolicy:
+    syncOptions:
+      - ServerSideApply=true
