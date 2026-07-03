@@ -7,12 +7,16 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://prometheus-community.github.io/helm-charts
-    chart: kube-prometheus-stack
-    targetRevision: 84.5.0   # pin exactly
-    helm:
-      releaseName: prometheus    # MUST match helm release name, or all resources get renamed
-      # values reference: copy the pattern from fluent-bit-app.yaml
+    - repoURL: https://prometheus-community.github.io/helm-charts
+      chart: kube-prometheus-stack
+      targetRevision: 84.5.0
+      helm:
+        releaseName: prometheus
+        valueFiles:
+          - $values/helm-values/monitoring/values.yaml   # resolved inside the second source
+    - repoURL: http://linux03.local:3000/admin/jif-lab-platform.git
+      targetRevision: main
+      ref: values          # referenced by $values above
   destination:
     server: https://kubernetes.default.svc
     namespace: monitoring
