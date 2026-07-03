@@ -13,7 +13,7 @@ spec:
       helm:
         releaseName: prometheus
         valueFiles:
-          - $values/helm-values/monitoring/values.yaml   # resolved inside the second source
+          - $values/helm-values/kube-prometheus-stack/values.yaml   # resolved inside the second source
     - repoURL: http://linux03.local:3000/admin/jif-lab-platform.git
       targetRevision: main
       ref: values          # referenced by $values above
