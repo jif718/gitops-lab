@@ -2,7 +2,7 @@ apiVersion: argocd-image-updater.argoproj.io/v1alpha1
 kind: ImageUpdater
 metadata:
   name: flask-demo-1-updater
-  namespace: default
+  namespace: argocd
 spec:
   writeBackConfig:
     method: "git"
