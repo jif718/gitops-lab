@@ -1,0 +1,25 @@
+# root-app.yaml
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: root
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: http://linux03.local:3000/admin/jif-lab-platform.git
+    targetRevision: main
+    path: .
+    directory:
+      recurse: true
+      # scan platform/ and apps/ for Application definitions;
+      # exclude manifests/ so root does not double-manage platform
+      # payloads already owned by their own Applications
+      exclude: 'manifests/**'
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+  syncPolicy:
+    automated:
+      prune: false     # deleting an app definition must never auto-delete the Application
+      selfHeal: true
