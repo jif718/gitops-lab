@@ -1,0 +1,8 @@
+name: flask-demo-2
+istioCanary: false
+chart:
+  repoURL: http://linux03.local:3000/admin/flask-demo-2-chart.git
+  targetRevision: main
+  path: .
+destination:
+  namespace: default
