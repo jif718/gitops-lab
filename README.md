@@ -1,116 +1,172 @@
-# jif-lab-platform
+# gitops-lab
 
-GitOps repository for a self-hosted Kubernetes platform, built as a hands-on lab for
-platform engineering / SRE practices. Every platform component in the cluster is
-declared here and continuously reconciled by Argo CD — no `helm install`, no
-`kubectl apply` against managed resources.
+GitOps control repository for a self-hosted, 3-node Kubernetes homelab, managed
+end-to-end with ArgoCD using the **App-of-Apps** pattern. This repo is the single
+source of truth for platform components and application delivery.
 
-> Application workloads (Helm charts for demo apps) live in a separate repo
-> following the platform/app repo split: [`jif-lab-apps`](../jif-lab-apps).
+> **Source of truth:** self-hosted Gitea (`linux03.local:3000`). The GitHub copy
+> is a **push mirror** for portfolio/backup only — ArgoCD pulls from Gitea, not
+> GitHub.
 
-## Cluster at a Glance
+---
 
-| | |
+## Architecture at a glance
+
+| Layer | Choice |
 |---|---|
-| Topology | 3-node kubeadm cluster (1 control-plane + 2 workers) |
-| Version | Kubernetes v1.36, containerd, Flannel CNI |
-| OS / Arch | Rocky Linux 10, arm64 (Parallels VMs on Apple Silicon) |
-| GitOps | Argo CD (App-of-Apps) + Argo CD Image Updater (CRD mode) |
-| Ingress | NGF (Gateway API) for platform tools, Istio ingress gateway for mesh apps |
-| Progressive delivery | Argo Rollouts + Istio VirtualService weight-based canary |
-| Observability | kube-prometheus-stack, EFK (Fluent Bit → ECK-managed Elasticsearch → Kibana) |
-| CI | Jenkins with dynamic K8s agents, Kaniko image builds → Harbor registry |
-| Load balancing | MetalLB (L2), VIPs `10.211.55.200` (NGF) / `10.211.55.201` (Istio) |
+| Cluster | kubeadm v1.36.0, containerd 2.2.3, Flannel CNI (vxlan, pod CIDR `10.244.0.0/16`) |
+| Nodes | 3 × arm64 Rocky Linux 10.1 (1 control-plane + 2 workers, on Parallels/M4) |
+| GitOps | ArgoCD (App-of-Apps), ArgoCD Image Updater (CR-driven, `method: git`) |
+| CI | Jenkins (controller + dynamic Kaniko/Python agents), Gitea webhooks |
+| Registry | Harbor (self-signed, `linux02.local:443`) |
+| Service mesh | Istio (sidecar mode), Argo Rollouts (progressive delivery) |
+| Ingress | Dual-entry: Istio ingress gateway for app traffic, NGF for platform tools |
+| Observability | kube-prometheus-stack; EFK (Fluent Bit → Elasticsearch → Kibana, ECK) |
+| Storage | Static Local PVs, `manual` StorageClass, `Retain` policy |
 
-## Repository Layout
+### GitOps delivery flow
+
+```
+Git push (Gitea) ─▶ Jenkins CI ─▶ Kaniko build ─▶ Harbor
+                                                     │
+                        ArgoCD Image Updater ◀───────┘ (detects new tag)
+                                 │ git write-back to chart values.yaml
+                                 ▼
+                        ArgoCD sync ─▶ cluster ─▶ Argo Rollout + Istio VS/DR
+                                                   (canary weight split)
+```
+
+### Ingress model (Method B — dual entry)
+
+- **Istio ingress gateway** — VIP `10.211.55.201`, for apps needing precise
+  traffic control (canary). TLS via `local-tls` secret in the `istio-ingress`
+  namespace (`credentialName` requires the secret in the same namespace).
+- **NGF main-gateway** — VIP `10.211.55.200`, for platform tools (Grafana,
+  Kibana, Jenkins, ArgoCD, Prometheus). TLS terminated at the gateway.
+
+---
+
+## Repository layout
 
 ```
 .
-├── apps/                  # Argo CD Application CRs only (App-of-Apps root scans this dir)
-│   ├── root-app.yaml      # root Application, prune disabled to avoid cascading deletes
-│   └── *-app.yaml         # one Application per platform component
-├── helm-values/           # values files, one dir per Helm chart
-│   └── <chart-name>/values.yaml
-├── manifests/             # raw manifests, one dir per Application
-│   ├── istio/             # shared Istio Gateway CR (wildcard *.local, HTTP+HTTPS)
-│   ├── logging/           # ECK Elasticsearch/Kibana CRs + elasticsearch-exporter
-│   ├── networking/        # NGF Gateway, HTTPRoutes, MetalLB IP pool
-│   ├── redis/             # Redis StatefulSet + exporter + ServiceMonitor
-│   └── storage/           # StorageClass + static Local PVs
-├── bootstrap/             # pre-GitOps cluster init (kubeadm config, CNI) — reference only
-└── secrets/               # placeholder; Sealed Secrets migration planned (see Roadmap)
+├── root-app.yaml          # ArgoCD root Application (App-of-Apps entrypoint)
+├── platform/              # Application defs for platform components
+├── apps/                  # Application defs for business apps (per-app dirs)
+│   └── <app>/
+│       ├── application.yaml
+│       └── image-updater.yaml
+├── manifests/             # Actual K8s payloads for platform components
+│   ├── istio/  logging/  networking/  redis/  storage/
+├── helm-values/           # Helm values per platform chart
+├── bootstrap/             # Cluster bootstrap material (kubeadm, Flannel)
+├── secrets/               # Secret handling notes (Sealed Secrets planned)
+└── README.md
 ```
 
-Conventions:
+### How the App-of-Apps wiring works
 
-- `apps/` contains **only** Application definitions; all real manifests live under `manifests/`.
-- Helm-based Applications use the multi-source pattern: chart from upstream repo,
-  values referenced via `$values/helm-values/<chart>/values.yaml` from this repo.
-- Sync waves order dependent components (istio-base → istiod → ingress gateway → gateway CR).
+- **`root-app.yaml`** is applied manually (bootstrap). Its source is the repo
+  root with `directory.recurse: true`, excluding non-Application directories:
 
-## GitOps Principles Applied
+  ```yaml
+  source:
+    path: .
+    directory:
+      recurse: true
+      exclude: '{manifests/**,helm-values/**,bootstrap/**,secrets/**}'
+  ```
 
-**Argo CD is the sole deployment path.** Direct `kubectl edit` / `helm upgrade` on
-managed resources is prohibited; drift is corrected by selfHeal or surfaced as OutOfSync.
+  So `root` only renders Application definitions under `platform/` and `apps/`;
+  it never double-manages the payloads in `manifests/`, which are owned by their
+  own Applications.
 
-**Safe adoption of pre-existing Helm releases.** Components originally installed by
-hand were adopted without downtime:
+- **`platform/*-app.yaml`** — each is an ArgoCD Application whose `source.path`
+  points at the matching `manifests/<component>` (or a Helm chart + values).
+- **`apps/<app>/application.yaml`** — points at the app's chart repo in Gitea;
+  `image-updater.yaml` is the `ImageUpdater` CR driving tag write-back.
 
-1. Extract live values with `helm get values`.
-2. Create the Application **without** syncPolicy; verify the diff shows only
-   tracking-annotation additions (no changes, no deletions).
-3. Enable auto-sync, then remove the Helm release secret
-   (`kubectl delete secret -l owner=helm,name=<release>`) — never `helm uninstall`.
+---
 
-**Controller-owned fields are excluded from reconciliation.** `ignoreDifferences`
-covers runtime-written fields, e.g. Argo Rollouts updating VirtualService weights
-during a canary, ECK writing orchestration hints, and Local PV `claimRef` metadata.
-CRD-owning Applications run with `prune: false`.
+## Platform components (`platform/`)
 
-**Server-Side Apply where CRDs exceed annotation limits.** kube-prometheus-stack
-syncs with `ServerSideApply=true`; diffs are verified with
-`argocd app diff --server-side-generate --hard-refresh`.
+Managed as individual ArgoCD Applications: `istio-base`, `istiod`,
+`istio-ingressgateway`, `shared-gateway`, `nginx-gateway-fabric`, `metallb`,
+`kube-prometheus-stack`, `fluent-bit`, `eck-operator`, `logging`, `redis`,
+`storage`, `argo-rollouts`, `networking`.
 
-## Traffic Architecture
+## Applications (`apps/`)
 
-Two ingress tiers, chosen per workload by traffic-governance needs:
+| App | Type | Delivery | Status |
+|---|---|---|---|
+| `flask-demo-1` | Argo Rollout | Istio VS/DR canary weight split | validated end-to-end |
+| `flask-demo-2` | Deployment | rolling update | deployed |
+| `html5demos` | Deployment | rolling update | deployed |
+| `spring-petclinic` | Deployment | rolling update | deployed |
 
-- **NGF / Gateway API** (`10.211.55.200`) — platform tools (Argo CD, Grafana, Kibana,
-  Jenkins, Prometheus) and apps without canary requirements. TLS terminates at the
-  gateway with a wildcard `*.local` cert (self-managed CA).
-- **Istio ingress gateway** (`10.211.55.201`) — workloads needing precise
-  weight-based canary. A shared Istio `Gateway` CR fronts them; VirtualServices
-  bind to both `istio-ingress/shared-gateway` and `mesh` to keep east-west routing.
+---
 
-A practical lesson encoded in this design: VirtualService weights only apply on the
-outbound side of a mesh-member sidecar. Traffic entering through a non-mesh ingress
-(NGF) bypasses weights and degrades to endpoint round-robin — hence the dedicated
-Istio ingress tier for canary workloads.
+## Operations
 
-## CI/CD Flow
+### First-time bootstrap
 
-```
-push → Gitea webhook → Jenkins (dynamic K8s agents)
-     → Kaniko builds image → Harbor registry
-     → Argo CD Image Updater detects new tag (allowTags regexp on build format)
-     → git write-back to app chart values.yaml (method: git)
-     → Gitea webhook → Argo CD sync → Argo Rollouts canary via Istio
+```bash
+# root is applied by hand; it then manages everything else
+kubectl apply -f root-app.yaml
+argocd app sync root --grpc-web
 ```
 
-CI and CD are strictly separated: Jenkins never touches the cluster; Image Updater
-owns the write-back; Argo CD owns deployment.
+### Add a new application
 
-## Roadmap
+```bash
+mkdir -p apps/<app>
+# add application.yaml (points at the app's chart repo) + image-updater.yaml
+git add apps/<app> && git commit -m "add <app>" && git push
+# root picks it up via recurse on next sync (or webhook-triggered sync)
+argocd app sync root --grpc-web
+```
 
-- **Sealed Secrets** — move hand-applied Secrets (registry creds, exporter creds,
-  TLS) into Git as `SealedSecret` resources; last remaining gap for full
-  cluster-rebuild-from-Git.
-- **ES Local PV nodeAffinity** — switch from role-label to hostname pinning before
-  scaling Elasticsearch beyond one node.
-- **Cilium evaluation** — on a separate test cluster, as a Flannel replacement.
+### Change a platform component
 
-## Related
+Never `kubectl apply` on ArgoCD-managed resources — edit Git, then sync.
 
-- [`jif-lab-apps`](../jif-lab-apps) — application Helm charts (Argo Rollouts canary demo, etc.)
-- AWS EKS migration project: [`jif718/aws-migration`](https://github.com/jif718/aws-migration)
+```bash
+# edit manifests/<component>/... or helm-values/<chart>/values.yaml
+git commit -am "update <component>" && git push
+argocd app sync <component> --grpc-web
+```
+
+### Verify cluster state
+
+```bash
+# all Applications should be Synced/Healthy
+kubectl -n argocd get applications
+kubectl -n argocd get applications | grep -v Synced   # ideally only the header
+```
+
+---
+
+## Conventions & guardrails
+
+- **GitOps discipline:** all changes go through Git commits. Direct
+  `kubectl apply` on managed resources gets reverted by sync.
+- **`prune: false` on root and CRD-owning Applications** — prevents cascading
+  deletion of child Applications / CRD instances.
+- **CRD-owning apps** (e.g. `kube-prometheus-stack`) use manual sync with
+  `ServerSideApply=true`, never global prune.
+- **Istio traffic split:** DestinationRule `host` points at the root service
+  (not stable); external traffic must enter via the Istio ingress gateway to
+  respect VirtualService weights (NGF is not a mesh member); keep `mesh` in the
+  VS `gateways` so east-west calls honor weights too.
+- **ArgoCD CLI** always uses `--grpc-web`.
+
+---
+
+## Known gaps / roadmap
+
+- `elasticsearch-exporter-creds` (`logging` ns) is still hand-applied — the last
+  GitOps gap; Sealed Secrets planned to close it.
+- Remove the legacy "Update Helm Chart Repo" stage from the Jenkinsfile (avoids
+  double-write conflict with Image Updater).
+- Confirm ServiceMonitor → Grafana scrape pipeline end-to-end.
 
