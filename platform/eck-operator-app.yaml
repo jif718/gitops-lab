@@ -15,7 +15,7 @@ spec:
         releaseName: elastic-operator
         valueFiles:
           - $values/helm-values/eck-operator/values.yaml
-    - repoURL: http://linux03.local:3000/admin/jif-lab-platform.git
+    - repoURL: http://linux03.local:3000/admin/gitops-lab.git
       targetRevision: main
       ref: values
   destination:
