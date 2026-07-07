@@ -1,0 +1,49 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: business-apps
+  namespace: argocd
+spec:
+  goTemplate: true
+  goTemplateOptions: ["missingkey=error"]
+  generators:
+    - git:
+        repoURL: http://linux03.local:3000/admin/gitops-lab.git
+        revision: main
+        files:
+          - path: "apps/*/config.yaml"
+  template:
+    metadata:
+      name: "{{ .name }}"
+      # Enterprise standard: cascade cleanup when an app entry is removed
+      finalizers:
+        - resources-finalizer.argocd.argoproj.io
+    spec:
+      project: default
+      source:
+        repoURL: "{{ .chart.repoURL }}"
+        targetRevision: "{{ .chart.targetRevision }}"
+        path: "{{ .chart.path }}"
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: "{{ .destination.namespace }}"
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+  # Per-app conditional fields live here, driven by config.yaml flags
+  templatePatch: |
+    {{- if .istioCanary }}
+    spec:
+      ignoreDifferences:
+        - group: networking.istio.io
+          kind: VirtualService
+          jsonPointers:
+            - /spec/http/0/route/0/weight
+            - /spec/http/0/route/1/weight
+        - group: networking.istio.io
+          kind: DestinationRule
+          jsonPointers:
+            - /spec/subsets/0/labels
+            - /spec/subsets/1/labels
+    {{- end }}

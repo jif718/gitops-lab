@@ -15,7 +15,7 @@ spec:
       # scan platform/ and apps/ for Application definitions;
       # exclude manifests/ so root does not double-manage platform
       # payloads already owned by their own Applications
-      exclude: '{manifests/**,helm-values/**,bootstrap/**,secrets/**}'
+      exclude: '{manifests/**,helm-values/**,bootstrap/**,secrets/**,apps/**}'
   destination:
     server: https://kubernetes.default.svc
     namespace: argocd
