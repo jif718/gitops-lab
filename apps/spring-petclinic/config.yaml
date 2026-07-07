@@ -1,0 +1,8 @@
+name: spring-petclinic
+istioCanary: true
+chart:
+  repoURL: http://linux03.local:3000/admin/spring-petclinic-chart.git
+  targetRevision: main
+  path: .
+destination:
+  namespace: default
