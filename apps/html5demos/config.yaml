@@ -1,0 +1,8 @@
+name: html5demos
+istioCanary: true
+chart:
+  repoURL: http://linux03.local:3000/admin/html5demos-chart.git
+  targetRevision: main
+  path: .
+destination:
+  namespace: default
