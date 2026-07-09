@@ -703,6 +703,14 @@ controller:
                       - secretVolume:
                           mountPath: "/kaniko/certs"
                           secretName: "harbor-ca"
+                      - persistentVolumeClaim:
+                          claimName: "jenkins-maven-cache-pvc"
+                          mountPath: "/home/jenkins/.m2"
+                          readOnly: false
+                    yaml: |
+                      spec:
+                        securityContext:
+                          fsGroup: 1000
                     containers:
                       - name: "jnlp"
                         image: "linux02.local/devops/python-agent:3.11-jdk21"
