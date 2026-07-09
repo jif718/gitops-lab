@@ -122,11 +122,12 @@ controller:
   # -- Resource allocation (Requests and Limits)
   resources:
     requests:
-      cpu: "50m"
-      memory: "256Mi"
+      cpu: "200m"
+      memory: "1Gi"
     limits:
-      cpu: "2000m"
-      memory: "4096Mi"
+      cpu: "2"
+      memory: "3Gi"
+  javaOpts: "-XX:MaxRAMPercentage=50.0"
 
   # Share process namespace to allow sidecar containers to interact with processes in other containers in the same pod
   shareProcessNamespace: false
@@ -629,7 +630,7 @@ controller:
                 namespace: "jenkins"
                 jenkinsUrl: "http://jenkins.jenkins.svc.cluster.local:8080/"
                 jenkinsTunnel: "jenkins-agent.jenkins.svc.cluster.local:50000"
-                containerCapStr: "10"
+                containerCapStr: "4"
                 maxRequestsPerHostStr: "32"
                 retentionTimeout: 5
                 waitForPodSec: 600
@@ -646,7 +647,7 @@ controller:
                     podRetention: "never"
                     serviceAccount: "default"
                     idleMinutes: 0
-                    instanceCap: 10
+                    instanceCap: 2
                     slaveConnectTimeoutStr: "100"
                     yamlMergeStrategy: "override"
                     showRawYaml: true
@@ -685,7 +686,7 @@ controller:
                     podRetention: "never"
                     serviceAccount: "default"
                     idleMinutes: 0
-                    instanceCap: 10
+                    instanceCap: 2
                     slaveConnectTimeoutStr: "100"
                     yamlMergeStrategy: "override"
                     showRawYaml: true
@@ -786,12 +787,12 @@ controller:
       # -- Port for sidecar health probes
       healthPort: 8060
       resources:
-            limits:
-              cpu: "2"
-              memory: 4Gi
-            requests:
-              cpu: "500m"
-              memory: 1Gi
+        requests:
+          cpu: 50m
+          memory: 64Mi
+        limits:
+          cpu: 250m
+          memory: 256Mi
       # -- Enables additional volume mounts for the config auto-reload container
       additionalVolumeMounts:
         []
@@ -1240,11 +1241,11 @@ agent:
   # -- Resources allocation (Requests and Limits)
   resources:
     requests:
-      cpu: "512m"
-      memory: "512Mi"
+      cpu: "100m"
+      memory: "256Mi"
       # ephemeralStorage:
     limits:
-      cpu: "512m"
+      cpu: "1"
       memory: "512Mi"
       # ephemeralStorage:
   livenessProbe: {}
@@ -1635,3 +1636,4 @@ helmtest:
       repository: "bats/bats"
       # -- Tag of the image to test the framework
       tag: "1.13.0"
+
