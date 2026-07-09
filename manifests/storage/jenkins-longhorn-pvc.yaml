@@ -1,0 +1,12 @@
+# manifests/storage/jenkins-longhorn-pvc.yaml (temporary name during migration)
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: jenkins-longhorn
+  namespace: jenkins
+spec:
+  storageClassName: longhorn
+  accessModes: ["ReadWriteOnce"]
+  resources:
+    requests:
+      storage: 8Gi
