@@ -1,6 +1,6 @@
 prometheus:
   prometheusSpec:
-    retention: 15d
+    retention: 7d
     retentionSize: 4GiB
     storageSpec:
       volumeClaimTemplate:
