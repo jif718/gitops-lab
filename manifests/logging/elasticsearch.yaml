@@ -32,7 +32,7 @@ spec:
         name: elasticsearch-data           # ECK default PVC name; must match for binding
       spec:
         accessModes: [ReadWriteOnce]
-        storageClassName: manual
+        storageClassName: longhorn
         resources:
           requests:
-            storage: 10Gi
+            storage: 5Gi
