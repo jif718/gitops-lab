@@ -45,6 +45,6 @@ spec:
         name: data
       spec:
         accessModes: [ReadWriteOnce]
-        storageClassName: manual
+        storageClassName: longhorn
         resources:
           requests: { storage: 2Gi }
