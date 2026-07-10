@@ -13,8 +13,6 @@ spec:
       node.store.allow_mmap: false        # fallback: avoid mmap limit even if sysctl missed
     podTemplate:
       spec:
-        nodeSelector:
-          node-role.kubernetes.io/logging: "true"   # schedule by role label
         containers:
         - name: elasticsearch
           env:
