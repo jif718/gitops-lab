@@ -8,7 +8,7 @@ spec:
   version: 9.4.2
   nodeSets:
   - name: default
-    count: 1
+    count: 3
     config:
       node.store.allow_mmap: false        # fallback: avoid mmap limit even if sysctl missed
     podTemplate:
@@ -25,14 +25,14 @@ spec:
               memory: 1Gi
               cpu: 500m
             limits:
-              memory: 1536Mi               # headroom over the 512m heap + off-heap
+              memory: 1.5Gi               # headroom over the 512m heap + off-heap
               cpu: 1
     volumeClaimTemplates:
     - metadata:
         name: elasticsearch-data           # ECK default PVC name; must match for binding
       spec:
         accessModes: [ReadWriteOnce]
-        storageClassName: longhorn
+        storageClassName: longhorn-single
         resources:
           requests:
             storage: 5Gi
