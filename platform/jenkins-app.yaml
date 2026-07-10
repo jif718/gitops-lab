@@ -18,6 +18,9 @@ spec:
     - repoURL: http://linux03.local:3000/admin/gitops-lab.git
       targetRevision: main
       ref: values                        # referenced by $values above
+      path: manifests/jenkins        # ADD: same source now also renders this dir
+      directory:
+        recurse: false
   destination:
     server: https://kubernetes.default.svc
     namespace: jenkins
