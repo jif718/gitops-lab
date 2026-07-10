@@ -99,7 +99,7 @@ controller:
     createSecret: false
 
     # -- The name of an existing secret containing the admin credentials
-    existingSecret: ""
+    existingSecret: "jenkins-credentials"
   # -- Email address for the administrator of the Jenkins instance
   jenkinsAdminEmail:
 
