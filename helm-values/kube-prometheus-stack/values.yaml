@@ -1,21 +1,16 @@
 prometheus:
   prometheusSpec:
-    nodeSelector:
-      kubernetes.io/hostname: linux01.local
-    tolerations:
-      - key: node-role.kubernetes.io/control-plane
-        operator: Exists
-        effect: NoSchedule
     retention: 15d
+    retentionSize: 4GiB
     storageSpec:
       volumeClaimTemplate:
         spec:
-          storageClassName: manual
+          storageClassName: longhorn
           accessModes:
             - ReadWriteOnce
           resources:
             requests:
-              storage: 8Gi
+              storage: 5Gi
 
 grafana:
   enabled: true
@@ -24,18 +19,10 @@ grafana:
   persistence:
     enabled: true
     type: pvc
-    storageClassName: manual
+    storageClassName: longhorn
     accessModes:
       - ReadWriteOnce
-    size: 2Gi
-  
-  nodeSelector:
-    kubernetes.io/hostname: linux01.local
-
-  tolerations:
-    - key: "node-role.kubernetes.io/control-plane"
-      operator: "Exists"
-      effect: "NoSchedule"
+    size: 2Gi  
 
 kube-state-metrics:
   prometheus:
