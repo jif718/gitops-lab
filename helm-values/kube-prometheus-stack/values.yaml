@@ -15,7 +15,9 @@ prometheus:
 grafana:
   enabled: true
   adminPassword: admin123
-
+  sidecar:
+    dashboards:
+      searchNamespace: ALL
   persistence:
     enabled: true
     type: pvc
