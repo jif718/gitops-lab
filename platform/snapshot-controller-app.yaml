@@ -9,9 +9,9 @@ metadata:
 spec:
   project: default
   source:
-    - repoURL: http://linux03.local:3000/admin/gitops-lab.git
-      targetRevision: main
-      path: manifests/snapshot-controller
+    repoURL: http://linux03.local:3000/admin/gitops-lab.git
+    targetRevision: main
+    path: manifests/snapshot-controller
   destination:
     server: https://kubernetes.default.svc
     namespace: kube-system    # controller manifests target kube-system anyway
