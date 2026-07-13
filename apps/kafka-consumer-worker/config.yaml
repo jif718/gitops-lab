@@ -1,0 +1,8 @@
+name: kafka-consumer-worker
+istioCanary: false
+chart:
+  repoURL: http://linux03.local:3000/admin/kafka-consumer-worker-chart.git
+  targetRevision: main
+  path: .
+destination:
+  namespace: default
