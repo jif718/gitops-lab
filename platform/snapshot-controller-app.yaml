@@ -8,13 +8,10 @@ metadata:
     argocd.argoproj.io/sync-wave: "-1"
 spec:
   project: default
-  sources:
-    - repoURL: https://github.com/kubernetes-csi/external-snapshotter
-      targetRevision: v8.6.0
-      path: client/config/crd              # VolumeSnapshot / Content / Class CRDs
-    - repoURL: https://github.com/kubernetes-csi/external-snapshotter
-      targetRevision: v8.6.0
-      path: deploy/kubernetes/snapshot-controller   # RBAC + controller Deployment
+  source:
+    - repoURL: http://linux03.local:3000/admin/gitops-lab.git
+      targetRevision: main
+      path: manifests/snapshot-controller
   destination:
     server: https://kubernetes.default.svc
     namespace: kube-system    # controller manifests target kube-system anyway
