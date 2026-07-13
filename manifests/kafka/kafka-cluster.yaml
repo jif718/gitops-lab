@@ -45,6 +45,12 @@ metadata:
   namespace: kafka
 spec:
   kafka:
+    metricsConfig:
+      type: jmxPrometheusExporter
+      valueFrom:
+        configMapKeyRef:
+          name: kafka-metrics
+          key: kafka-metrics-config.yml
     # version omitted -> operator default for this Strimzi release
     listeners:
       - name: plain
