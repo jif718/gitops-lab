@@ -58,6 +58,7 @@ spec:
         type: internal
         tls: false
     config:
+      auto.create.topics.enable: false
       default.replication.factor: 3
       min.insync.replicas: 2
       offsets.topic.replication.factor: 3
