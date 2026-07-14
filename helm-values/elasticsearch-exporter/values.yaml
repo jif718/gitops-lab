@@ -1,0 +1,43 @@
+fullnameOverride: elasticsearch-exporter   # keep resource names, so the "job" label is unchanged
+
+es:
+  uri: https://lab-es-es-http:9200
+  all: true
+  indices: true
+  sslSkipVerify: true                      # matches current args
+
+extraEnvSecrets:                           # reuse the existing hand-applied secret
+  ES_USERNAME:
+    secret: elasticsearch-exporter-creds
+    key: username
+  ES_PASSWORD:
+    secret: elasticsearch-exporter-creds
+    key: password
+
+nodeSelector:
+  node-role.kubernetes.io/logging: "true"  # co-locate with ES on linux02
+
+serviceMonitor:
+  enabled: true
+  labels:
+    release: prometheus
+
+prometheusRule:
+  enabled: true
+  labels:
+    release: prometheus
+  rules:
+    - alert: ElasticsearchClusterRed
+      expr: elasticsearch_cluster_health_status{color="red"} == 1
+      for: 2m
+      labels:
+        severity: critical
+      annotations:
+        summary: "ES cluster status is RED"
+    - alert: ElasticsearchClusterYellow
+      expr: elasticsearch_cluster_health_status{color="yellow"} == 1
+      for: 10m
+      labels:
+        severity: warning
+      annotations:
+        summary: "ES cluster status is YELLOW"
