@@ -14,9 +14,6 @@ extraEnvSecrets:                           # reuse the existing hand-applied sec
     secret: elasticsearch-exporter-creds
     key: password
 
-nodeSelector:
-  node-role.kubernetes.io/logging: "true"  # co-locate with ES on linux02
-
 serviceMonitor:
   enabled: true
   labels:

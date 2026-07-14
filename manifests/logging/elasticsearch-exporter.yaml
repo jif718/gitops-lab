@@ -118,8 +118,6 @@ spec:
             preStop:
               exec:
                 command: ["/bin/sleep", "20"]
-      nodeSelector:
-        node-role.kubernetes.io/logging: "true"
 ---
 # Source: prometheus-elasticsearch-exporter/templates/prometheusrule.yaml
 apiVersion: monitoring.coreos.com/v1
