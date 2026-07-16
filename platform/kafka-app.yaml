@@ -14,8 +14,8 @@ spec:
   destination:
     server: https://kubernetes.default.svc
     namespace: kafka
-#  syncPolicy:
-#    automated:
-#      selfHeal: true
-#    syncOptions:
-#      - CreateNamespace=true
+  syncPolicy:
+    automated:
+      selfHeal:
+    syncOptions:
+      - CreateNamespace=true
