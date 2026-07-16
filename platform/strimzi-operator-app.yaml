@@ -23,3 +23,10 @@ spec:
   destination:
     server: https://kubernetes.default.svc
     namespace: kafka
+  syncPolicy:
+    automated:
+      selfHeal: true
+      # NO prune — CRD-owning app, cluster discipline
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true        # Strimzi CRDs exceed 262KB annotation limit
