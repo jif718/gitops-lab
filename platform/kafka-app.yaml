@@ -16,6 +16,6 @@ spec:
     namespace: kafka
   syncPolicy:
     automated:
-      selfHeal: true
+      selfHeal:
     syncOptions:
       - CreateNamespace=true
