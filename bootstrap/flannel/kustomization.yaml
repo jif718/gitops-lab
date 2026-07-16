@@ -1,0 +1,15 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - upstream/kube-flannel.yml
+
+# Local delta vs upstream v0.28.1: images mirrored to Harbor.
+# Covers both containers and initContainers automatically.
+images:
+  - name: ghcr.io/flannel-io/flannel
+    newName: linux02.local/k8s/flannel
+    newTag: v0.28.1
+  - name: ghcr.io/flannel-io/flannel-cni-plugin
+    newName: linux02.local/k8s/flannel-cni-plugin
+    newTag: v1.9.0-flannel1
