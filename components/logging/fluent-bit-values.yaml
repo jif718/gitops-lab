@@ -71,3 +71,11 @@ config:
         Replace_Dots On
         Retry_Limit 5
         Trace_Error On
+
+serviceMonitor:
+  enabled: true
+  selector:
+    release: prometheus              # SM metadata label, matched by Prometheus serviceMonitorSelector
+  port: http
+  path: /api/v1/metrics/prometheus   # keep v1, matching the raw manifest
+  interval: 30s
