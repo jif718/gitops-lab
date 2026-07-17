@@ -1,9 +1,0 @@
-# eck-operator-values.yaml
-# Operator itself is lightweight; pin resource bounds explicitly
-resources:
-  requests:
-    cpu: 100m
-    memory: 150Mi
-  limits:
-    cpu: 500m
-    memory: 512Mi
