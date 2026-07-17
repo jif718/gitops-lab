@@ -1,0 +1,29 @@
+# kibana.yaml
+apiVersion: kibana.k8s.elastic.co/v1
+kind: Kibana
+metadata:
+  name: lab-kibana
+  namespace: logging
+spec:
+  version: 9.4.2                  # match ES exactly
+  count: 1
+  elasticsearchRef:
+    name: lab-es                  # Operator auto-wires TLS + credentials
+  config:
+    server.publicBaseUrl: "https://kibana.local"
+  http:
+    tls:
+      selfSignedCertificate:
+        disabled: true
+  podTemplate:
+    spec:
+      # no nodeSelector — stateless app, let the scheduler pick the best node
+      containers:
+      - name: kibana
+        resources:
+          requests:
+            memory: 800Mi
+            cpu: 200m
+          limits:
+            memory: 1Gi
+            cpu: 1

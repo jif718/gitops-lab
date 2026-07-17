@@ -1,0 +1,4 @@
+nginx:
+  service:
+    type: LoadBalancer
+    externalTrafficPolicy: Cluster

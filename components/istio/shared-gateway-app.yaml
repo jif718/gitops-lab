@@ -1,22 +1,20 @@
-# root-app.yaml
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: root
+  name: shared-gateway
   namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"
 spec:
   project: default
   source:
     repoURL: http://linux03.local:3000/admin/gitops-lab.git
     targetRevision: main
-    path: components
-    directory:
-      recurse: true
-      include: '{**/*-app.yaml,**/*-appset.yaml}'
+    path: components/istio/manifests
   destination:
     server: https://kubernetes.default.svc
-    namespace: argocd
+    namespace: istio-ingress
   syncPolicy:
     automated:
-      prune: false     # deleting an app definition must never auto-delete the Application
+      prune: true
       selfHeal: true

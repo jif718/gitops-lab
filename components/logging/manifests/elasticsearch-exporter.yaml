@@ -1,0 +1,183 @@
+---
+# Source: prometheus-elasticsearch-exporter/templates/service.yaml
+kind: Service
+apiVersion: v1
+metadata:
+  name: elasticsearch-exporter
+  namespace: logging
+  labels:
+    helm.sh/chart: prometheus-elasticsearch-exporter-7.4.0
+    app.kubernetes.io/name: prometheus-elasticsearch-exporter
+    app.kubernetes.io/instance: elasticsearch-exporter
+    app.kubernetes.io/version: "v1.11.0"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 9108
+      protocol: TCP
+  selector:
+    app.kubernetes.io/name: prometheus-elasticsearch-exporter
+    app.kubernetes.io/instance: elasticsearch-exporter
+---
+# Source: prometheus-elasticsearch-exporter/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: elasticsearch-exporter
+  namespace: logging
+  labels:
+    helm.sh/chart: prometheus-elasticsearch-exporter-7.4.0
+    app.kubernetes.io/name: prometheus-elasticsearch-exporter
+    app.kubernetes.io/instance: elasticsearch-exporter
+    app.kubernetes.io/version: "v1.11.0"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: prometheus-elasticsearch-exporter
+      app.kubernetes.io/instance: elasticsearch-exporter
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        helm.sh/chart: prometheus-elasticsearch-exporter-7.4.0
+        app.kubernetes.io/name: prometheus-elasticsearch-exporter
+        app.kubernetes.io/instance: elasticsearch-exporter
+        app.kubernetes.io/version: "v1.11.0"
+        app.kubernetes.io/managed-by: Helm
+    spec:
+      serviceAccountName: default
+      restartPolicy: Always
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: exporter
+          env:
+            - name: ES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: elasticsearch-exporter-creds
+                  key: password
+            - name: ES_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: elasticsearch-exporter-creds
+                  key: username
+          image: "quay.io/prometheuscommunity/elasticsearch-exporter:v1.11.0"
+          imagePullPolicy: IfNotPresent
+          command: ["elasticsearch_exporter",
+                    "--log.format=logfmt",
+                    "--log.level=info",
+                    "--es.uri=https://lab-es-es-http:9200",
+                    "--es.all",
+                    "--es.indices",
+                    "--es.indices_settings",
+                    "--es.indices_mappings",
+                    "--no-es.aliases",
+                    "--es.shards",
+                    "--collector.snapshots",
+                    "--es.timeout=30s",
+                    "--es.ssl-skip-verify",
+                    "--web.listen-address=:9108",
+                    "--web.telemetry-path=/metrics"]
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            readOnlyRootFilesystem: true
+          ports:
+            - containerPort: 9108
+              name: http
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 1
+            periodSeconds: 5
+            timeoutSeconds: 5
+          lifecycle:
+            preStop:
+              exec:
+                command: ["/bin/sleep", "20"]
+---
+# Source: prometheus-elasticsearch-exporter/templates/prometheusrule.yaml
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: elasticsearch-exporter
+  namespace: logging
+  labels:
+    helm.sh/chart: prometheus-elasticsearch-exporter-7.4.0
+    app.kubernetes.io/name: prometheus-elasticsearch-exporter
+    app.kubernetes.io/instance: elasticsearch-exporter
+    app.kubernetes.io/version: "v1.11.0"
+    app.kubernetes.io/managed-by: Helm
+    release: prometheus
+spec:
+  groups:
+    - name: prometheus-elasticsearch-exporter
+      rules: 
+        - alert: ElasticsearchClusterRed
+          annotations:
+            summary: ES cluster status is RED
+          expr: elasticsearch_cluster_health_status{color="red"} == 1
+          for: 2m
+          labels:
+            severity: critical
+        - alert: ElasticsearchClusterYellow
+          annotations:
+            summary: ES cluster status is YELLOW
+          expr: elasticsearch_cluster_health_status{color="yellow"} == 1
+          for: 10m
+          labels:
+            severity: warning
+---
+# Source: prometheus-elasticsearch-exporter/templates/servicemonitor.yaml
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: elasticsearch-exporter
+  namespace: logging
+  labels:
+    helm.sh/chart: prometheus-elasticsearch-exporter-7.4.0
+    app.kubernetes.io/name: prometheus-elasticsearch-exporter
+    app.kubernetes.io/instance: elasticsearch-exporter
+    app.kubernetes.io/version: "v1.11.0"
+    app.kubernetes.io/managed-by: Helm
+    release: prometheus
+spec:
+  endpoints:
+  - interval: 10s
+    scrapeTimeout: 10s
+    honorLabels: true
+    port: http
+    path: /metrics
+    scheme: http
+  jobLabel: elasticsearch-exporter
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: prometheus-elasticsearch-exporter
+      app.kubernetes.io/instance: elasticsearch-exporter
+  namespaceSelector:
+    matchNames:
+      - logging
+  sampleLimit: 0

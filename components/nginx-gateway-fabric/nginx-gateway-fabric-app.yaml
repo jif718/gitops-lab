@@ -1,0 +1,30 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: nginx-gateway-fabric
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  sources:
+    - repoURL: ghcr.io/nginx/charts          # OCI: 不带 oci:// 前缀, 不含 chart 名
+      chart: nginx-gateway-fabric            # chart 名单独, repoURL 是它的"目录"
+      targetRevision: "2.6.3"
+      helm:
+        releaseName: ngf                     # 关键: 锁定现有 release 名, 不重建入口网关
+        valueFiles:
+          - $values/components/nginx-gateway-fabric/nginx-gateway-fabric-values.yaml
+    - repoURL: http://linux03.local:3000/admin/gitops-lab.git
+      targetRevision: main
+      ref: values
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: nginx-gateway
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: false
+    syncOptions:
+      - CreateNamespace=false
+      - ServerSideApply=true 

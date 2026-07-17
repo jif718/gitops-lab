@@ -1,0 +1,27 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: networking
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: http://linux03.local:3000/admin/gitops-lab.git
+    targetRevision: main
+    path: components/networking/manifests
+    directory:
+      recurse: true            # include routes/ subdir
+  destination:
+    server: https://kubernetes.default.svc
+    # resources carry their own metadata.namespace (nginx-gateway / metallb-system);
+    # this value only applies to resources that omit a namespace.
+    namespace: nginx-gateway
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=false   # namespaces already exist; do not let ArgoCD create them
+

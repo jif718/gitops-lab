@@ -1,0 +1,22 @@
+# image-updater-values.yaml
+config:
+  registries:
+    - name: Harbor
+      api_url: https://linux02.local
+      prefix: linux02.local
+      ping: yes
+      # Static robot account; no token-refresh script needed
+      credentials: pullsecret:argocd/harbor-creds
+      # Trust Harbor's self-signed CA (mounted below)
+      default: true
+
+# Mount Harbor CA into the registry TLS trust path
+volumes:
+  - name: harbor-ca
+    secret:
+      secretName: harbor-ca
+volumeMounts:
+  - name: harbor-ca
+    mountPath: /etc/ssl/certs/harbor-ca.pem
+    subPath: linux02.local.crt
+    readOnly: true

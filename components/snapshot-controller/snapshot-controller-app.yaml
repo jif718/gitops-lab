@@ -1,0 +1,23 @@
+# platform/snapshot-controller-app.yaml
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: snapshot-controller
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1"
+spec:
+  project: default
+  sources:
+    - repoURL: https://github.com/kubernetes-csi/external-snapshotter.git
+      targetRevision: v8.6.0
+      path: client/config/crd
+    - repoURL: https://github.com/kubernetes-csi/external-snapshotter.git
+      targetRevision: v8.6.0
+      path: deploy/kubernetes/snapshot-controller
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: kube-system    # controller manifests target kube-system anyway
+  syncPolicy:
+    syncOptions:
+      - Prune=false           # owns CRDs

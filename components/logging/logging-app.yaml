@@ -1,22 +1,24 @@
-# root-app.yaml
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: root
+  name: logging
   namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
 spec:
   project: default
   source:
     repoURL: http://linux03.local:3000/admin/gitops-lab.git
     targetRevision: main
-    path: components
-    directory:
-      recurse: true
-      include: '{**/*-app.yaml,**/*-appset.yaml}'
+    path: components/logging/manifests
   destination:
     server: https://kubernetes.default.svc
-    namespace: argocd
+    # ECK CRs carry their own namespace; confirm it matches your cluster before apply.
+    namespace: logging
   syncPolicy:
     automated:
-      prune: false     # deleting an app definition must never auto-delete the Application
+      prune: false
       selfHeal: true
+    syncOptions:
+      - CreateNamespace=false
+

@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: redis
+  namespace: redis
+spec:
+  serviceName: redis
+  replicas: 1
+  selector:
+    matchLabels: { app: redis }
+  template:
+    metadata:
+      labels: { app: redis }
+    spec:
+      containers:
+        - name: redis
+          image: redis:8.8.0-alpine   # official image
+          # inject password from secret as env var
+          env:
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: redis-auth
+                  key: password
+          # pass password via CLI arg (overrides config file), expanded by shell
+          command:
+            - sh
+            - -c
+            - exec redis-server /etc/redis/redis.conf --requirepass "$REDIS_PASSWORD"
+          ports:
+            - containerPort: 6379
+          resources:
+            requests: { memory: 64Mi }
+            limits: { memory: 128Mi }
+          volumeMounts:
+            - name: config
+              mountPath: /etc/redis
+            - name: data
+              mountPath: /data
+      volumes:
+        - name: config
+          configMap: { name: redis-config }
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: [ReadWriteOnce]
+        storageClassName: longhorn
+        resources:
+          requests: { storage: 2Gi }
