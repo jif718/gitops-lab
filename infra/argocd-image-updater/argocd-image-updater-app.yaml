@@ -13,7 +13,7 @@ spec:
       targetRevision: 1.2.2              # match current helm release exactly
       helm:
         valueFiles:
-          - $values/components/argocd-image-updater/argocd-image-updater-values.yaml
+          - $values/infra/argocd-image-updater/argocd-image-updater-values.yaml
     - repoURL: http://linux03.local:3000/admin/gitops-lab.git
       targetRevision: main
       ref: values

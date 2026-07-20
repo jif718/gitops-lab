@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: kafka
+  name: elastic-stack
   namespace: argocd
   finalizers:
     - resources-finalizer.argocd.argoproj.io
@@ -10,12 +10,15 @@ spec:
   source:
     repoURL: http://linux03.local:3000/admin/gitops-lab.git
     targetRevision: main
-    path: components/kafka/manifests
+    path: infra/logging/manifests
   destination:
     server: https://kubernetes.default.svc
-    namespace: kafka
+    # ECK CRs carry their own namespace; confirm it matches your cluster before apply.
+    namespace: logging
   syncPolicy:
     automated:
-      selfHeal:
+      prune: false
+      selfHeal: true
     syncOptions:
-      - CreateNamespace=true
+      - CreateNamespace=false
+

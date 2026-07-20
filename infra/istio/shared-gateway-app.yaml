@@ -1,24 +1,20 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: elastic-stack
+  name: shared-gateway
   namespace: argocd
-  finalizers:
-    - resources-finalizer.argocd.argoproj.io
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"
 spec:
   project: default
   source:
     repoURL: http://linux03.local:3000/admin/gitops-lab.git
     targetRevision: main
-    path: components/logging/manifests
+    path: infra/istio/manifests
   destination:
     server: https://kubernetes.default.svc
-    # ECK CRs carry their own namespace; confirm it matches your cluster before apply.
-    namespace: logging
+    namespace: istio-ingress
   syncPolicy:
     automated:
-      prune: false
+      prune: true
       selfHeal: true
-    syncOptions:
-      - CreateNamespace=false
-

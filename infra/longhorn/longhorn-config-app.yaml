@@ -1,20 +1,19 @@
+# platform/longhorn-config-app.yaml
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: shared-gateway
+  name: longhorn-config
   namespace: argocd
   annotations:
-    argocd.argoproj.io/sync-wave: "3"
+    argocd.argoproj.io/sync-wave: "1"   # after longhorn (wave 0), CRDs must exist first
 spec:
   project: default
   source:
     repoURL: http://linux03.local:3000/admin/gitops-lab.git
     targetRevision: main
-    path: components/istio/manifests
+    path: infra/longhorn/manifests
   destination:
     server: https://kubernetes.default.svc
-    namespace: istio-ingress
   syncPolicy:
-    automated:
-      prune: true
-      selfHeal: true
+    syncOptions:
+      - Prune=false

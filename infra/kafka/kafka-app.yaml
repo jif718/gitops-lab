@@ -1,19 +1,21 @@
-# platform/longhorn-config-app.yaml
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: longhorn-config
+  name: kafka
   namespace: argocd
-  annotations:
-    argocd.argoproj.io/sync-wave: "1"   # after longhorn (wave 0), CRDs must exist first
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
 spec:
   project: default
   source:
     repoURL: http://linux03.local:3000/admin/gitops-lab.git
     targetRevision: main
-    path: components/longhorn/manifests
+    path: infra/kafka/manifests
   destination:
     server: https://kubernetes.default.svc
+    namespace: kafka
   syncPolicy:
+    automated:
+      selfHeal:
     syncOptions:
-      - Prune=false
+      - CreateNamespace=true

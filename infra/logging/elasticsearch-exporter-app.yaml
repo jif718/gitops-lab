@@ -1,19 +1,19 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: fluent-bit
+  name: elasticsearch-exporter
   namespace: argocd
   finalizers:
     - resources-finalizer.argocd.argoproj.io
 spec:
   project: default
   sources:
-    - repoURL: https://fluent.github.io/helm-charts
-      chart: fluent-bit
-      targetRevision: "0.57.7"          # EDIT: helm list 的 CHART 列版本
+    - repoURL: https://prometheus-community.github.io/helm-charts
+      chart: prometheus-elasticsearch-exporter
+      targetRevision: 7.4.0
       helm:
         valueFiles:
-          - $values/components/logging/fluent-bit-values.yaml
+          - $values/infra/logging/elasticsearch-exporter-values.yaml
     - repoURL: http://linux03.local:3000/admin/gitops-lab.git
       targetRevision: main
       ref: values
@@ -22,8 +22,5 @@ spec:
     namespace: logging
   syncPolicy:
     automated:
-      prune: true
+      prune: false
       selfHeal: true
-    syncOptions:
-      - CreateNamespace=false
-      - ServerSideApply=true

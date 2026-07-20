@@ -14,7 +14,7 @@ spec:
       helm:
         releaseName: ngf                     # 关键: 锁定现有 release 名, 不重建入口网关
         valueFiles:
-          - $values/components/nginx-gateway-fabric/nginx-gateway-fabric-values.yaml
+          - $values/infra/nginx-gateway-fabric/nginx-gateway-fabric-values.yaml
     - repoURL: http://linux03.local:3000/admin/gitops-lab.git
       targetRevision: main
       ref: values
