@@ -9,7 +9,7 @@ spec:
   source:
     repoURL: http://linux03.local:3000/admin/gitops-lab.git
     targetRevision: main
-    path: infra
+    path: .
     directory:
       recurse: true
       include: '{infra/**/*-app.yaml,infra/**/*-appset.yaml,apps/*-appset.yaml}'
