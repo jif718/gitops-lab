@@ -12,7 +12,7 @@ spec:
     path: infra
     directory:
       recurse: true
-      include: '{**/*-app.yaml,**/*-appset.yaml}'
+      include: '{infra/**/*-app.yaml,infra/**/*-appset.yaml,apps/*-appset.yaml}'
   destination:
     server: https://kubernetes.default.svc
     namespace: argocd
