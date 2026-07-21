@@ -1,6 +1,5 @@
 name: flask-demo-1
-# istioCanary is REQUIRED in every config.yaml (missingkey=error will
-# fail generation if absent) — set false for plain Deployment apps
+# istioCanary is REQUIRED in every config.yaml (false = plain Deployment app)
 istioCanary: true
 chart:
   repoURL: http://linux03.local:3000/admin/flask-demo-1-chart.git

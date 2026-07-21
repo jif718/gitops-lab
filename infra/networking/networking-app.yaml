@@ -15,8 +15,7 @@ spec:
       recurse: true            # include routes/ subdir
   destination:
     server: https://kubernetes.default.svc
-    # resources carry their own metadata.namespace (nginx-gateway / metallb-system);
-    # this value only applies to resources that omit a namespace.
+    # only applies to resources that omit metadata.namespace (nginx-gateway / metallb-system set their own)
     namespace: nginx-gateway
   syncPolicy:
     automated:

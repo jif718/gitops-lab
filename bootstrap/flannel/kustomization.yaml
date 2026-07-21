@@ -4,8 +4,7 @@ kind: Kustomization
 resources:
   - upstream/kube-flannel.yml
 
-# Local delta vs upstream v0.28.1: images mirrored to Harbor.
-# Covers both containers and initContainers automatically.
+# Local delta vs upstream v0.28.1: images mirrored to Harbor (covers containers + initContainers)
 images:
   - name: ghcr.io/flannel-io/flannel
     newName: linux02.local/k8s/flannel
