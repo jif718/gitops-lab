@@ -8,11 +8,11 @@ metadata:
 spec:
   project: default
   sources:
-    - repoURL: ghcr.io/nginx/charts          # OCI: 不带 oci:// 前缀, 不含 chart 名
-      chart: nginx-gateway-fabric            # chart 名单独, repoURL 是它的"目录"
+    - repoURL: ghcr.io/nginx/charts          # OCI: no oci:// prefix, no chart name
+      chart: nginx-gateway-fabric            # chart name is separate; repoURL is its "directory"
       targetRevision: "2.6.3"
       helm:
-        releaseName: ngf                     # 关键: 锁定现有 release 名, 不重建入口网关
+        releaseName: ngf                     # key: pin the existing release name, don't recreate the ingress gateway
         valueFiles:
           - $values/infra/nginx-gateway-fabric/nginx-gateway-fabric-values.yaml
     - repoURL: http://linux03.local:3000/admin/gitops-lab.git

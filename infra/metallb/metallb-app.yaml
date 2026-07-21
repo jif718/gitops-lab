@@ -20,7 +20,7 @@ spec:
   destination:
     server: https://kubernetes.default.svc
     namespace: metallb-system
-  syncPolicy:                      # 临时注释, 验证 diff 后恢复
+  syncPolicy:                      # temporarily commented out; restore after verifying diff
     automated:
       prune: true
       selfHeal: true

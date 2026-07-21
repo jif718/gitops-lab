@@ -10,7 +10,7 @@ spec:
   sources:
     - repoURL: https://fluent.github.io/helm-charts
       chart: fluent-bit
-      targetRevision: "0.57.7"          # EDIT: helm list 的 CHART 列版本
+      targetRevision: "0.57.7"          # EDIT: version from the CHART column of `helm list`
       helm:
         valueFiles:
           - $values/infra/logging/fluent-bit-values.yaml
