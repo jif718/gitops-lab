@@ -1,8 +1,8 @@
 # gitops-lab
 
-自建3节点Kubernetes homelab的GitOps控制仓库,使用ArgoCD的**App-of-Apps**模式进行端到端管理。本仓库是平台组件、应用交付以及secrets的唯一事实来源(single source of truth)。**日常day-2运维中不使用`kubectl apply`。**
+自建 3 节点 Kubernetes homelab 的 GitOps 控制仓库,使用 ArgoCD 的 **App-of-Apps** 模式进行端到端管理。本仓库是平台组件、应用交付以及 secrets 的唯一事实来源(single source of truth)。**日常 day-2 运维中不使用 `kubectl apply`。**
 
-> **事实来源:** 自建Gitea(`linux03.local:3000`)。GitHub上的副本仅作为**push mirror**,用于作品集/备份——ArgoCD从Gitea拉取,而非GitHub。
+> **事实来源:** 自建 Gitea(`linux03.local:3000`)。GitHub 上的副本仅作为 **push mirror**,用于作品集/备份——ArgoCD 从 Gitea 拉取,而非 GitHub。
 
 ---
 
@@ -11,22 +11,22 @@
 | 层级 | 选型 |
 |---|---|
 | Cluster | kubeadm v1.36.0,containerd,Flannel CNI(vxlan,pod CIDR `10.244.0.0/16`) |
-| Nodes | 3 × arm64 Rocky Linux 10.1(1 control-plane + 2 workers,运行于Parallels/M4) |
-| GitOps | ArgoCD(App-of-Apps + ApplicationSet),Image Updater(CR驱动,`method: git`) |
-| CI | Jenkins(JCasC controller + 动态Kaniko/Python agents),Gitea webhooks |
+| Nodes | 3 × arm64 Rocky Linux 10.1(1 control-plane + 2 workers,运行于 Parallels/M4) |
+| GitOps | ArgoCD(App-of-Apps + ApplicationSet),Image Updater(CR 驱动,`method: git`) |
+| CI | Jenkins(JCasC controller + 动态 Kaniko/Python agents),Gitea webhooks |
 | Registry | Harbor(self-signed,`linux02.local:443`) |
-| Service mesh | Istio(sidecar模式),Argo Rollouts(渐进式交付) |
-| Ingress | 双入口:Istio ingress gateway负责应用流量,NGF负责平台工具 |
+| Service mesh | Istio(sidecar 模式),Argo Rollouts(渐进式交付) |
+| Ingress | 双入口:Istio ingress gateway 负责应用流量,NGF 负责平台工具 |
 | Observability | kube-prometheus-stack;EFK(Fluent Bit → Elasticsearch → Kibana,ECK) |
-| Messaging | Strimzi运维的Kafka(KRaft模式,3节点combined pool) |
-| Storage | Longhorn(默认2-replica + 供应用级复制型workload使用的single-replica class) |
-| Secrets | Sealed Secrets——每个手动创建的secret都以加密形式存于本仓库 |
+| Messaging | Strimzi 运维的 Kafka(KRaft 模式,3 节点 combined pool) |
+| Storage | Longhorn(默认 2-replica + 供应用级复制型 workload 使用的 single-replica class) |
+| Secrets | Sealed Secrets——每个手动创建的 secret 都以加密形式存于本仓库 |
 
-### GitOps交付流程
+### GitOps 交付流程
 
 ```mermaid
 flowchart TD
-    push["Git push (Gitea)"] --> ci["Jenkins CI"]
+    push["Git push"] --> ci["Jenkins CI"]
     ci --> build["Kaniko build"]
     build --> harbor["Harbor"]
     harbor -.->|检测到新 tag| updater["ArgoCD Image Updater"]
@@ -35,10 +35,10 @@ flowchart TD
     cluster --> rollout["Argo Rollout + Istio VS/DR<br/>(canary weight split)"]
 ```
 
-### Ingress模型(双入口)
+### Ingress 模型(双入口)
 
-- **Istio ingress gateway**——VIP `10.211.55.201`,用于需要精确流量控制(canary)的应用。TLS通过`istio-ingress` namespace中的`local-tls`提供(`credentialName`要求secret位于同一namespace)。
-- **NGF main-gateway**——VIP `10.211.55.200`,用于平台工具(Grafana、Kibana、Jenkins、ArgoCD、Prometheus)。TLS在gateway处终止。
+- **Istio ingress gateway**——VIP `10.211.55.201`,用于需要精确流量控制(canary)的应用。TLS 通过 `istio-ingress` namespace 中的 `local-tls` 提供(`credentialName` 要求 secret 位于同一 namespace)。
+- **NGF main-gateway**——VIP `10.211.55.200`,用于平台工具(Grafana, Kibana, Jenkins, ArgoCD, Prometheus)。TLS 在 gateway 处终止。
 
 ---
 
@@ -52,7 +52,7 @@ flowchart TD
 │   ├── flannel/               #   原始上游 manifest + kustomize overlay
 │   ├── metrics-server/        #   同样的模式(upstream/ + kustomization.yaml)
 │   └── argocd/                #   vendored Helm chart(.tgz)+ values.yaml
-├── infra/                     # 平台层 —— 每个目录一个 ArgoCD Application
+├── infra/                     #   平台层 —— 每个目录一个 ArgoCD Application
 │   ├── metallb/               #   <name>-app.yaml + <name>-values.yaml(Helm apps)
 │   ├── nginx-gateway-fabric/
 │   ├── istio/                 #   istio-base / istiod / ingressgateway apps
@@ -69,30 +69,30 @@ flowchart TD
 │   ├── sealed-secrets/        #   Sealed Secrets controller(Helm app)
 │   └── secrets/               #   SealedSecret manifests,按 namespace 分组
 │       └── manifests/<ns>/<name>.yaml
-└── apps/                      # 业务应用,经由 ApplicationSet
+└── apps/                      #   业务应用,经由 ApplicationSet
     ├── apps-appset.yaml       #   Git file generator:apps/*/config.yaml
     └── <app>/config.yaml      #   generator 消费的每应用参数
 ```
 
 ### 各部分如何串联
 
-- **`root-app.yaml`**是唯一手动apply的Application。它发现`infra/`下的Application manifests(`*-app.yaml`)以及`apps/apps-appset.yaml`;原始载荷(`manifests/`、values文件)由各自的子Application拥有,绝不由root二次管理。
-- **`infra/<component>/<component>-app.yaml`**——每个平台组件一个Application。基于Helm的组件使用ArgoCD multi-source:chart来自上游Helm repo + values经由`$values` ref来自本仓库。
-- **`apps/apps-appset.yaml`**——带Git file generator的ApplicationSet;每个`apps/<app>/config.yaml`生成一个Application。新增应用 = 新增一个文件。
+- **`root-app.yaml`** 是唯一手动 apply 的 Application。它发现 `infra/` 下的 Application manifests(`*-app.yaml`)以及 `apps/apps-appset.yaml`;原始载荷(`manifests/`、values 文件)由各自的子 Application 拥有,绝不由 root 二次管理。
+- **`infra/<component>/<component>-app.yaml`**——每个平台组件一个 Application。基于 Helm 的组件使用 ArgoCD multi-source:chart 来自上游 Helm repo + values 经由 `$values` ref 来自本仓库。
+- **`apps/apps-appset.yaml`**——带 Git file generator 的 ApplicationSet;每个 `apps/<app>/config.yaml` 生成一个 Application。新增应用 = 新增一个文件。
 
 ---
 
-## GitOps下的Secrets
+## GitOps 下的 Secrets
 
-所有手动创建的secrets(registry creds、TLS certs、ArgoCD repo credentials、应用密码)都以加密的**SealedSecret** manifest形式存于`infra/secrets/manifests/`,由集群内的controller解密。sealing key是唯一保存在Git之外的secret(离线备份)——恢复它是灾难恢复中唯一的手动步骤。
+所有手动创建的 secrets(registry creds, TLS certs, ArgoCD repo credentials, 应用密码)都以加密的 **SealedSecret** manifest 形式存于 `infra/secrets/manifests/`,由集群内的 controller 解密。sealing key 是唯一保存在 Git 之外的 secret(离线备份)——恢复它是灾难恢复中唯一的手动步骤。
 
-Operator生成的secrets(ECK、Strimzi、Istio CAs、webhook certs)有意排除:它们是由各自controller拥有的派生状态,对其sealing会造成ownership冲突。参见`infra/secrets/README.md`。
+Operator 生成的 secrets(ECK, Strimzi, Istio CAs, webhook certs)有意排除:它们是由各自 controller 拥有的派生状态,对其 sealing 会造成 ownership 冲突。参见 `infra/secrets/README.md`。
 
 ---
 
 ## 运维
 
-### 首次bootstrap
+### 首次 bootstrap
 
 ```bash
 # 1. kubeadm init/join,然后应用 bootstrap/(Flannel、metrics-server、ArgoCD)
@@ -112,7 +112,7 @@ git add apps/<app> && git commit -m "add <app>" && git push
 
 ### 变更一个平台组件
 
-绝不对ArgoCD管理的资源执行`kubectl apply`——编辑Git,然后sync。
+绝不对 ArgoCD 管理的资源执行 `kubectl apply`——编辑 Git,然后 sync。
 
 ```bash
 # 编辑 infra/<component>/*-values.yaml 或 infra/<component>/manifests/...
@@ -120,7 +120,7 @@ git commit -am "update <component>" && git push
 argocd app sync <component> --grpc-web
 ```
 
-### 新增一个secret
+### 新增一个 secret
 
 ```bash
 kubectl -n <ns> create secret generic <name> --from-literal=k=v \
@@ -141,13 +141,13 @@ kubectl get sealedsecrets -A                          # 全部 Synced=True
 
 ## 约定与护栏
 
-- **GitOps纪律:** 所有变更都经由Git commit。对管理中的资源直接`kubectl apply`会被sync还原。
-- **root和拥有CRD的Application上`prune: false`**——防止级联删除子Application / CRD实例。Strimzi CRDs额外要求`ServerSideApply=true`(256KB annotation上限)。
-- **Istio流量切分:** DestinationRule `host`指向root service(而非stable);外部流量必须经由Istio ingress gateway进入才能遵循VirtualService weights(NGF不是mesh member);在VS的`gateways`中保留`mesh`,让东西向调用也遵循weights。
-- **Controller只协调它watch的对象:** 删除下游Secret不会触发Sealed Secrets controller(它watch `SealedSecret`);编辑ECK拥有的StatefulSet会被立即还原(它watch CR之下的一切)。始终操作controller视为期望状态的那个资源。
-- **每次chart变更都以diff形式交付:** 每次commit前先做`helm template`前后对比加server-side dry-run。
-- **ArgoCD CLI**始终使用`--grpc-web`。
+- **GitOps 纪律:** 所有变更都经由 Git commit。对管理中的资源直接 `kubectl apply` 会被 sync 还原。
+- **root 和拥有 CRD 的 Application 上 `prune: false`**——防止级联删除子 Application / CRD 实例。Strimzi CRDs 额外要求 `ServerSideApply=true`(256KB annotation 上限)。
+- **Istio 流量切分:** DestinationRule `host` 指向 root service(而非 stable);外部流量必须经由 Istio ingress gateway 进入才能遵循 VirtualService weights(NGF 不是 mesh member);在 VS 的 `gateways` 中保留 `mesh`,让东西向调用也遵循 weights。
+- **Controller 只协调它 watch 的对象:** 删除下游 Secret 不会触发 Sealed Secrets controller(它 watch `SealedSecret`);编辑 ECK 拥有的 StatefulSet 会被立即还原(它 watch CR 之下的一切)。始终操作 controller 视为期望状态的那个资源。
+- **每次 chart 变更都以 diff 形式交付:** 每次 commit 前先做 `helm template` 前后对比加 server-side dry-run。
+- **ArgoCD CLI** 始终使用 `--grpc-web`。
 
 
 
-Author: YIFAN JIA (jif)
+Author: YIFAN JIA (Jif)
