@@ -733,6 +733,49 @@ controller:
                         resourceLimitCpu: "2000m"
                         resourceLimitMemory: "2Gi"
 
+                  - name: "maven-agent"
+                    namespace: "jenkins"
+                    label: "maven"
+                    nodeUsageMode: "NORMAL"
+                    podRetention: "never"
+                    serviceAccount: "default"
+                    idleMinutes: 0
+                    instanceCap: 2
+                    slaveConnectTimeoutStr: "100"
+                    yamlMergeStrategy: "override"
+                    workspaceVolume:
+                      emptyDirWorkspaceVolume:
+                        memory: false
+                    imagePullSecrets:
+                      - name: "harbor-secret"
+                    nodeSelector: "kubernetes.io/os=linux"
+                    containers:
+                      - name: "jnlp"
+                        image: "linux02.local/devops/python-agent:3.11-jdk21"
+                        alwaysPullImage: false
+                        workingDir: "/home/jenkins/agent"
+                        ttyEnabled: true
+                        resourceRequestCpu: "100m"
+                        resourceRequestMemory: "256Mi"
+                        resourceLimitCpu: "1000m"
+                        resourceLimitMemory: "1Gi"
+
+                      - name: "maven"
+                        image: "linux02.local/devops/maven:3.9-eclipse-temurin-17"
+                        alwaysPullImage: false
+                        workingDir: "/home/jenkins/agent"
+                        command: "sleep"
+                        args: "99d"
+                        ttyEnabled: true
+                        envVars:
+                          - envVar:
+                              key: "MAVEN_OPTS"
+                              value: "-Xmx768m"
+                        resourceRequestCpu: "200m"
+                        resourceRequestMemory: "512Mi"
+                        resourceLimitCpu: "2000m"
+                        resourceLimitMemory: "1536Mi"
+
         unclassified:
           location:
             url: "https://jenkins.local/"
