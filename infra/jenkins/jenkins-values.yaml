@@ -560,6 +560,10 @@ controller:
       keyName: GITEA_USERNAME
     - name: jenkins-credentials
       keyName: GITEA_PASSWORD
+    - name: jenkins-credentials
+      keyName: NEXUS_USERNAME
+    - name: jenkins-credentials
+      keyName: NEXUS_PASSWORD
 
   # ref: https://github.com/jenkinsci/configuration-as-code-plugin/blob/master/docs/features/secrets.adoc#kubernetes-secrets
   # additionalExistingSecrets:
@@ -626,6 +630,13 @@ controller:
                       username: "${jenkins-credentials-GITEA_USERNAME}"
                       password: "${jenkins-credentials-GITEA_PASSWORD}"
                       description: "Gitea credentials"
+                  
+                  - usernamePassword:
+                      scope: GLOBAL
+                      id: "nexus-deployer"
+                      username: "${jenkins-credentials-NEXUS_USERNAME}"
+                      password: "${jenkins-credentials-NEXUS_PASSWORD}"
+                      description: "Nexus deployer for Maven publish"
 
       kubernetes-cloud-and-agents: |
         jenkins:
