@@ -45,7 +45,7 @@ controller:
     repository: "devops/jenkins"
 
     # -- Controller image tag override; i.e., tag: "2.440.1-jdk21"
-    tag: "2.555.3-lts"
+    tag: "2.580.2-jdk25-r1"
 
     # -- Controller image tag label
     tagLabel: jdk21
@@ -417,82 +417,8 @@ controller:
 
   # Plugins will be installed during Jenkins controller start
   # -- List of Jenkins plugins to install. If you don't want to install plugins, set it to `false`
-  installPlugins:
-    - antisamy-markup-formatter:173.v680e3a_b_69ff3
-    - apache-httpcomponents-client-4-api:4.5.14-269.vfa_2321039a_83
-    - asm-api:9.10.1-216.va_9256d3b_844b_
-    - authentication-tokens:1.144.v5ff4a_5ec5c33
-    - bootstrap5-api:5.3.8-1048.va_c299057e35c
-    - bouncycastle-api:2.30.1.84-291.v9f17b_21896e2
-    - branch-api:2.1280.v0d4e5b_b_460ef
-    - caffeine-api:3.2.3-194.v31a_b_f7a_b_5a_81
-    - cloudbees-folder:6.1100.ve9eed61d16c4
-    - commons-lang3-api:3.20.0-109.ve43756e2d2b_4
-    - commons-text-api:1.15.0-218.va_61573470393
-    - configuration-as-code:2088.ve3b_42c663c80
-    - credentials:1502.v5c95e620ddfe
-    - credentials-binding:725.ve52b_2328a_fde
-    - display-url-api:2.217.va_6b_de84cc74b_
-    - durable-task:671.v340ff7959010
-    - font-awesome-api:7.2.0-990.vf220b_2a_496f9
-    - git:5.10.1
-    - git-client:6.6.0
-    - gitea:273.vb_78d13f6d9a_d
-    - gson-api:2.14.0-201.v8eefe5515533
-    - handy-uri-templates-2-api:2.1.8-38.vcea_5d521d5f3
-    - instance-identity:203.v15e81a_1b_7a_38
-    - ionicons-api:94.vcc3065403257
-    - jackson-annotations2-api:2.22-19.v10a_a_582ea_26e
-    - jackson2-api:2.21.2-436.v29efdb_7418ff
-    - jakarta-activation-api:2.1.4-1
-    - jakarta-mail-api:2.1.5-1
-    - jakarta-xml-bind-api:4.0.9-19.v2b_a_5b_44d9a_1c
-    - javax-activation-api:1.2.0-8
-    - jaxb:2.3.9-143.v5979df3304e6
-    - joda-time-api:2.14.2-193.v422b_efce56e0
-    - json-api:20260522-217.v0b_18b_8cd4672
-    - kubernetes:4423.vb_59f230b_ce53
-    - kubernetes-client-api:7.3.1-256.v788a_0b_787114
-    - kubernetes-credentials:207.v492f58828b_ed
-    - locale:641.v84f22d75fd8b_
-    - mailer:534.v1b_36f5864073
-    - metrics:4.2.37-494.v06f9a_939d33a_
-    - mina-sshd-api-common:2.17.1-187.v0341274c2905
-    - mina-sshd-api-core:2.17.1-187.v0341274c2905
-    - okhttp-api:5.3.2-200.vedb_720a_cf1f8
-    - pipeline-build-step:584.vdb_a_2cc3a_d07a_
-    - pipeline-graph-analysis:254.v0f63a_a_447dca_
-    - pipeline-groovy-lib:798.v5cc688825312
-    - pipeline-input-step:551.vdff487c5998c
-    - pipeline-milestone-step:152.v6e22b_8cfc66c
-    - pipeline-model-api:2.2291.v2934911987b_6
-    - pipeline-model-definition:2.2291.v2934911987b_6
-    - pipeline-model-extensions:2.2291.v2934911987b_6
-    - pipeline-rest-api:2.41
-    - pipeline-stage-step:345.va_96187909426
-    - pipeline-stage-tags-metadata:2.2291.v2934911987b_6
-    - pipeline-stage-view:2.41
-    - plain-credentials:199.v9f8e1f741799
-    - plugin-util-api:7.1341.v039f146993d9
-    - prism-api:1.30.0-741.v034eb_0b_0a_a_fa_
-    - scm-api:728.vc30dcf7a_0df5
-    - script-security:1402.v94c9ce464861
-    - snakeyaml-api:2.5-149.v72471e9c6371
-    - ssh-credentials:372.va_250881b_08cd
-    - structs:362.va_b_695ef4fdf9
-    - variant:70.va_d9f17f859e0
-    - woodstox-core-api:7.2.1-6.v3718a_a_11f5c4
-    - workflow-aggregator:608.v67378e9d3db_1
-    - workflow-api:1413.v2ff1a_5e720fa_
-    - workflow-basic-steps:1098.v808b_fd7f8cf4
-    - workflow-cps:4331.v9d06ed4658ff
-    - workflow-durable-task-step:1479.v56e587f413a_7
-    - workflow-job:1571.1580.v18e46842c125
-    - workflow-multibranch:821.vc3b_4ea_780798
-    - workflow-scm-step:466.va_d69e602552b_
-    - workflow-step-api:724.v538c2362b_dfb_
-    - workflow-support:1015.v785e5a_b_b_8b_22
-
+  installPlugins: false   # plugins are baked into the image (see plugins-resolved.txt)
+  
   # If set to false, Jenkins will download the minimum required version of all dependencies.
   # -- Download the minimum required version or latest version of all dependencies
   installLatestPlugins: false
