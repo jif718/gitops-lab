@@ -168,7 +168,7 @@ controller:
 
   # Set min/max heap here if needed with "-Xms512m -Xmx512m"
   # -- Append to `JAVA_OPTS` env var
-  javaOpts:
+  #javaOpts:
   # -- Append to `JENKINS_OPTS` env var
   jenkinsOpts:
 
