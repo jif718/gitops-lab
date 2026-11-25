@@ -5,7 +5,7 @@ metadata:
   name: lab-kibana
   namespace: logging
 spec:
-  version: 9.4.2                  # match ES exactly
+  version: 9.5.7                  # match ES exactly
   count: 1
   elasticsearchRef:
     name: lab-es                  # Operator auto-wires TLS + credentials
