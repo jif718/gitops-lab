@@ -6,6 +6,10 @@ metadata:
   labels:
     strimzi.io/cluster: lab-kafka
 spec:
+  spec:
+  kafka:
+    version: 4.3.0
+    metadataVersion: 4.3-IV0
   replicas: 3
   roles:
     - controller
